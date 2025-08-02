@@ -59,4 +59,73 @@ function tab.out(lines, pos, opts)
     end
 end
 
+---@param lines string[]
+---@param pos integer[]
+---@param opts? ntab.out.opts
+---
+---@return ntab.md | nil
+function tab.reverse(lines, pos, opts)
+    opts = vim.tbl_extend("force", {
+        ignore_beginning = false,
+        behavior = config.user.behavior,
+        skip_prev = false,
+    }, opts or {})
+
+    log.debug(opts, "tabin opts")
+    log.debug(pos, "cursor pos")
+
+    local line = lines[pos[1]]
+
+    if not opts.ignore_beginning then
+        local before_cursor = line:sub(0, pos[2])
+        if vim.trim(before_cursor) == "" then
+            return
+        end
+    end
+
+    -- convert from 0 to 1 based indexing
+    local col = pos[2] + 1
+
+    for i = col - 1, 1, -1 do
+        local char = line:sub(i, i)
+        local pair_info = utils.get_pair(char)
+
+        if pair_info then
+            local target_pos
+
+            if char == pair_info.close then
+                target_pos = i - 1
+            elseif char == pair_info.open then
+                -- Found an opening character - check if it has a valid closing
+                local closing_pos = utils.find_closing(pair_info, line, i)
+                if closing_pos and closing_pos < col then
+                    -- We're past this pair's closing, move back inside it
+                    target_pos = closing_pos - 1
+                end
+            end
+
+            if target_pos and target_pos > 0 and target_pos < col then
+                local prev = {
+                    pos = col,
+                    char = line:sub(col, col),
+                }
+
+                local next = {
+                    pos = target_pos,
+                    char = line:sub(target_pos, target_pos),
+                }
+
+                local md = {
+                    prev = prev,
+                    next = next,
+                    pos = target_pos + 1, -- +1 because we want 1-based position for cursor
+                }
+                return log.debug(md, "moving back inside pair")
+            end
+        end
+    end
+
+    return nil
+end
+
 return tab
