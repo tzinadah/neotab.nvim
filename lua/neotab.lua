@@ -31,6 +31,21 @@ function neotab.tabout()
     end
 end
 
+function neotab.tabreverse()
+    if not enabled or vim.tbl_contains(config.user.exclude, vim.bo.filetype) then
+        return
+    end
+
+    local lines = api.nvim_buf_get_lines(0, 0, -1, false)
+    local pos = api.nvim_win_get_cursor(0)
+    local md = tab.reverse(lines, pos)
+    log.debug(md, "md")
+
+    if md then
+        utils.set_cursor(md.pos)
+    end
+end
+
 function neotab.tabout_luasnip()
     local ok, luasnip = pcall(require, "luasnip")
 
@@ -64,6 +79,7 @@ function neotab.setup(options)
 
     utils.map("i", "<Plug>(neotab-out)", '<Cmd>lua require("neotab").tabout()<CR>')
     utils.map("i", "<Plug>(neotab-out-luasnip)", '<Cmd>lua require("neotab").tabout_luasnip()<CR>')
+    utils.map("i", "<Plug>(neotab-reverse)", '<Cmd>lua require("neotab").tabreverse()<CR>')
 
     if config.user.tabkey ~= "" then
         api.nvim_set_keymap("i", config.user.tabkey, "<Plug>(neotab-out)", { silent = true })

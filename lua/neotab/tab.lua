@@ -71,7 +71,7 @@ function tab.reverse(lines, pos, opts)
         skip_prev = false,
     }, opts or {})
 
-    log.debug(opts, "tabin opts")
+    log.debug(opts, "tabrev opts")
     log.debug(pos, "cursor pos")
 
     local line = lines[pos[1]]
