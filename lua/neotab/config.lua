@@ -9,6 +9,7 @@ local config = {
 ---@class ntab.user.config
 config.defaults = {
     tabkey = "<Tab>",
+    reverse_key = "<S-Tab>",
     act_as_tab = true,
     behavior = "nested", ---@type ntab.behavior
     pairs = { ---@type ntab.pair[]

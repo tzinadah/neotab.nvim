@@ -85,6 +85,15 @@ function neotab.setup(options)
         api.nvim_set_keymap("i", config.user.tabkey, "<Plug>(neotab-out)", { silent = true })
     end
 
+    if config.user.reverse_key ~= "" then
+        api.nvim_set_keymap(
+            "i",
+            config.user.reverse_key,
+            "<Plug>(neotab-reverse)",
+            { silent = true }
+        )
+    end
+
     if config.user.smart_punctuators.enabled then
         api.nvim_create_autocmd("InsertCharPre", {
             callback = require("neotab.punctuators").handle,
