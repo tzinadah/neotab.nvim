@@ -51,6 +51,7 @@ To see full configuration types check [types.lua](./lua/neotab/types.lua)
 ```lua
 {
     tabkey = "<Tab>",
+    reverse_key = "<S-Tab>",
     act_as_tab = true,
     behavior = "nested", ---@type ntab.behavior
     pairs = { ---@type ntab.pair[]
@@ -85,6 +86,16 @@ to not bind to any key, set it to `""`
 
 ```lua
 tabkey = "<Tab>",
+```
+
+### reverse_key
+
+the key that triggers the `tabout` action
+
+to not bind to any key, set it to `""`
+
+```lua
+reverse_key = "<S-Tab>",
 ```
 
 ### act_as_tab
