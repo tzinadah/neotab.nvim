@@ -210,22 +210,24 @@ function utils.find_prev_nested(info, line, col)
         end
     else
         local opening_idx = utils.find_opening(info, line, col - 1)
-        local l, r = (opening_idx or 1), col - 2
-        local first
+        if opening_idx then
+            local l, r = opening_idx + 1, col - 2
+            local last
 
-        for i = r, l, -1 do
-            char = line:sub(i, i)
-            local char_info = utils.get_pair(char)
+            for i = r, l, -1 do
+                char = line:sub(i, i)
+                local char_info = utils.get_pair(char)
 
-            if char_info and char == char_info.close then
-                first = first or i
-                if utils.valid_pair(char_info, line, l, i - 1) then
-                    return i
+                if char_info and char == char_info.close then
+                    last = last or i
+                    if utils.valid_pair(char_info, line, l, i - 1) then
+                        return i - 1
+                    end
                 end
             end
-        end
 
-        return opening_idx or first
+            return opening_idx + 1
+        end
     end
 end
 
@@ -233,21 +235,27 @@ end
 ---@param line string
 ---@param col integer
 function utils.find_prev_closing(pair, line, col)
-    local open_char = line:sub(col - 1, col - 1)
+    local char = line:sub(col - 1, col - 1)
 
     local i
     if pair.open == pair.close then
-        -- Find the previous occurrence of the same character
         local before_cursor = line:sub(1, col - 2)
         local idx = before_cursor:reverse():find(pair.close, 1, true)
-        i = idx and (col - 2 - idx + 1)
-    elseif open_char ~= pair.open then
-        i = utils.find_opening(pair, line, col)
-        -- If no opening found, look for the character itself going backwards
-        if not i then
-            local before_cursor = line:sub(1, col - 1)
+        i = idx and (col - 1 - idx)
+    elseif char ~= pair.open then
+        i = utils.find_opening(pair, line, col - 1)
+        if i then
+            i = i + 1
+        else
+            local before_cursor = line:sub(1, col - 2)
             local idx = before_cursor:reverse():find(pair.close, 1, true)
-            i = idx and (col - 1 - idx + 1)
+            if idx then
+                i = col - 1 - idx
+                local opening = utils.find_opening(pair, line, i)
+                if opening then
+                    i = i - 1
+                end
+            end
         end
     end
 
