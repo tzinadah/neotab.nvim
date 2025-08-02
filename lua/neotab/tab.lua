@@ -86,46 +86,29 @@ function tab.reverse(lines, pos, opts)
     -- convert from 0 to 1 based indexing
     local col = pos[2] + 1
 
-    for i = col - 1, 1, -1 do
-        local char = line:sub(i, i)
-        local pair_info = utils.get_pair(char)
-
-        if pair_info then
-            local target_pos
-
-            if char == pair_info.close then
-                target_pos = i - 1
-            elseif char == pair_info.open then
-                -- Found an opening character - check if it has a valid closing
-                local closing_pos = utils.find_closing(pair_info, line, i)
-                if closing_pos and closing_pos < col then
-                    -- We're past this pair's closing, move back inside it
-                    target_pos = closing_pos - 1
-                end
-            end
-
-            if target_pos and target_pos > 0 and target_pos < col then
-                local prev = {
-                    pos = col,
-                    char = line:sub(col, col),
-                }
-
-                local next = {
-                    pos = target_pos,
-                    char = line:sub(target_pos, target_pos),
-                }
-
-                local md = {
-                    prev = prev,
-                    next = next,
-                    pos = target_pos + 1, -- +1 because we want 1-based position for cursor
-                }
-                return log.debug(md, "moving back inside pair")
+    if not opts.skip_prev then
+        local prev_pair = utils.get_pair(line:sub(col - 1, col - 1))
+        if prev_pair then
+            local md = utils.find_prev(prev_pair, line, col, opts.behavior)
+            if md then
+                return log.debug(md, "prev pair")
             end
         end
     end
 
-    return nil
+    local curr_pair = utils.get_pair(line:sub(col, col))
+    if curr_pair then
+        local prev = {
+            pos = col,
+            char = line:sub(col, col),
+        }
+        local md = {
+            prev = prev,
+            next = prev,
+            pos = col - 1, -- Move backwards instead of forwards
+        }
+        return log.debug(md, "curr pair")
+    end
 end
 
 return tab
