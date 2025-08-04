@@ -36,12 +36,12 @@ end
 
 function utils.find_opening(info, line, col)
     if info.open == info.close then
-        local idx = line:sub(1, col):reverse():find(info.open, 1, true)
+        local idx = line:sub(1, col - 1):reverse():find(info.open, 1, true)
         return idx and (#line - idx)
     end
 
     local c = 1
-    for i = col, 1, -1 do
+    for i = col - 1, 1, -1 do
         local char = line:sub(i, i)
 
         if info.open == char then
@@ -235,28 +235,16 @@ end
 ---@param line string
 ---@param col integer
 function utils.find_prev_closing(pair, line, col)
-    local char = line:sub(col - 1, col - 1)
+    local char = line:sub(col + 1, col + 1)
 
     local i
+    local before_cursor = line:sub(1, col - 1)
+    local idx = before_cursor:reverse():find(pair.open, 1, true)
+
     if pair.open == pair.close then
-        local before_cursor = line:sub(1, col - 2)
-        local idx = before_cursor:reverse():find(pair.close, 1, true)
-        i = idx and (col - 1 - idx)
+        i = idx and (col - idx)
     elseif char ~= pair.open then
-        i = utils.find_opening(pair, line, col - 1)
-        if i then
-            i = i + 1
-        else
-            local before_cursor = line:sub(1, col - 2)
-            local idx = before_cursor:reverse():find(pair.close, 1, true)
-            if idx then
-                i = col - 1 - idx
-                local opening = utils.find_opening(pair, line, i)
-                if opening then
-                    i = i - 1
-                end
-            end
-        end
+        i = utils.find_opening(pair, line, col - 1) or idx and (col - idx)
     end
 
     return i or utils.find_prev_nested(pair, line, col)
@@ -279,19 +267,19 @@ function utils.find_prev(pair, line, col, behavior)
 
     if i then
         local prev = {
-            pos = col - 1,
-            char = line:sub(col - 1, col - 1),
+            pos = i,
+            char = line:sub(i, i),
         }
 
         local next = {
-            pos = i,
-            char = line:sub(i, i),
+            pos = col + 1,
+            char = line:sub(col + 1, col + 1),
         }
 
         return {
             prev = prev,
             next = next,
-            pos = math.min(col - 1, i + 1), -- Move backwards, but ensure valid position
+            pos = math.min(col - 1, i),
         }
     end
 end
