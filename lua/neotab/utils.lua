@@ -36,7 +36,7 @@ end
 
 function utils.find_opening(info, line, col)
     if info.open == info.close then
-        local idx = line:sub(1, col - 1):reverse():find(info.open, 1, true)
+        local idx = line:sub(1, col):reverse():find(info.open, 1, true)
         return idx and (#line - idx)
     end
 
@@ -197,10 +197,10 @@ end
 ---
 ---@return integer | nil
 function utils.find_prev_nested(info, line, col)
-    local char = line:sub(col - 1, col - 1)
+    local char = line:sub(col, col)
 
     if info.open == info.close or info.open == char then
-        for i = col - 2, 1, -1 do
+        for i = col - 1, 1, -1 do
             char = line:sub(i, i)
             local char_info = utils.get_pair(char)
 
@@ -211,7 +211,7 @@ function utils.find_prev_nested(info, line, col)
     else
         local opening_idx = utils.find_opening(info, line, col - 1)
         if opening_idx then
-            local l, r = opening_idx + 1, col - 2
+            local l, r = opening_idx, col - 1
             local last
 
             for i = r, l, -1 do
@@ -221,12 +221,12 @@ function utils.find_prev_nested(info, line, col)
                 if char_info and char == char_info.close then
                     last = last or i
                     if utils.valid_pair(char_info, line, l, i - 1) then
-                        return i - 1
+                        return i
                     end
                 end
             end
 
-            return opening_idx + 1
+            return opening_idx or last
         end
     end
 end
@@ -235,7 +235,7 @@ end
 ---@param line string
 ---@param col integer
 function utils.find_prev_closing(pair, line, col)
-    local char = line:sub(col + 1, col + 1)
+    local char = line:sub(col, col)
 
     local i
     local before_cursor = line:sub(1, col - 1)
@@ -273,7 +273,7 @@ function utils.find_prev(pair, line, col, behavior)
 
         local next = {
             pos = col + 1,
-            char = line:sub(col + 1, col + 1),
+            char = line:sub(col, col),
         }
 
         return {
