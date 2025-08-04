@@ -269,7 +269,7 @@ function utils.find_prev_closing(pair, line, col)
         i = utils.find_opening(pair, line, col - 1) or idx and (col - idx)
     end
 
-    return i or utils.find_prev_nested(pair, line, col)
+    return i + 1 or utils.find_prev_nested(pair, line, col)
 end
 
 ---@param pair ntab.pair
