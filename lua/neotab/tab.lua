@@ -15,6 +15,7 @@ function tab.out(lines, pos, opts)
         ignore_beginning = false,
         behavior = config.user.behavior,
         skip_prev = false,
+        skip_curr = false,
     }, opts or {})
 
     log.debug(opts, "tabout opts")
@@ -76,28 +77,27 @@ function tab.reverse(lines, pos, opts)
 
     local line = lines[pos[1]]
 
-    if not opts.ignore_beginning then
-        local before_cursor = line:sub(0, pos[2])
-        if vim.trim(before_cursor) == "" then
-            return
-        end
+    -- Check if at start of line
+    local before_cursor = line:sub(0, pos[2])
+    if vim.trim(before_cursor) == "" then
+        return
     end
 
     -- convert from 0 to 1 based indexing
     local col = pos[2] + 1
 
-    if not opts.skip_prev then
-        local prev_pair = utils.get_pair(line:sub(col - 1, col - 1))
-        if prev_pair then
-            local md = utils.find_prev(prev_pair, line, col, opts.behavior)
+    if not opts.skip_curr then
+        local curr_pair = utils.get_pair(line:sub(col, col))
+        if curr_pair then
+            local md = utils.find_prev(curr_pair, line, col, opts.behavior)
             if md then
-                return log.debug(md, "prev pair")
+                return log.debug(md, "curr pair")
             end
         end
     end
 
-    local curr_pair = utils.get_pair(line:sub(col, col))
-    if curr_pair then
+    local prev_pair = utils.get_pair(line:sub(col - 1, col - 1))
+    if prev_pair then
         local prev = {
             pos = col,
             char = line:sub(col, col),
@@ -105,9 +105,9 @@ function tab.reverse(lines, pos, opts)
         local md = {
             prev = prev,
             next = prev,
-            pos = col - 1, -- Move backwards instead of forwards
+            pos = col - 1,
         }
-        return log.debug(md, "curr pair")
+        return log.debug(md, "prev pair")
     end
 end
 
