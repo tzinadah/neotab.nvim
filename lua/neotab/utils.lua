@@ -205,7 +205,7 @@ function utils.find_prev_nested(info, line, col)
             local char_info = utils.get_pair(char)
 
             if char_info then
-                return i
+                return i + 1
             end
         end
     else
@@ -221,12 +221,12 @@ function utils.find_prev_nested(info, line, col)
                 if char_info and char == char_info.close then
                     last = last or i
                     if utils.valid_pair(char_info, line, l, i - 1) then
-                        return i
+                        return i + 1
                     end
                 end
             end
 
-            return opening_idx or last
+            return opening_idx + 1 or last
         end
     end
 end
