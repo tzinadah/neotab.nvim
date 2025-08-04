@@ -41,7 +41,7 @@ function utils.find_opening(info, line, col)
     end
 
     local c = 1
-    for i = col - 1, 1, -1 do
+    for i = col, 1, -1 do
         local char = line:sub(i, i)
 
         if info.open == char then
@@ -90,6 +90,29 @@ function utils.valid_pair(info, line, l, r)
             c = c + 1
         elseif info.close == char then
             c = c - 1
+        end
+
+        if c == 0 then
+            return true
+        end
+    end
+
+    return false
+end
+
+function utils.valid_pair_rev(info, line, l, r)
+    if info.open == info.close and line:sub(l, r):find(info.open, 1, true) then
+        return true
+    end
+
+    local c = 1
+    for i = l, r do
+        local char = line:sub(i, i)
+
+        if info.open == char then
+            c = c - 1
+        elseif info.close == char then
+            c = c + 1
         end
 
         if c == 0 then
@@ -203,7 +226,6 @@ function utils.find_prev_nested(info, line, col)
         for i = col - 1, 1, -1 do
             char = line:sub(i, i)
             local char_info = utils.get_pair(char)
-
             if char_info then
                 return i + 1
             end
@@ -220,7 +242,7 @@ function utils.find_prev_nested(info, line, col)
 
                 if char_info and char == char_info.close then
                     last = last or i
-                    if utils.valid_pair(char_info, line, l, i - 1) then
+                    if utils.valid_pair_rev(char_info, line, l, i - 1) then
                         return i + 1
                     end
                 end
